@@ -14,47 +14,41 @@ module Debugr
   class Engine
     def initialize(session)
       @session = session              # Session object passed from Session.new
-      # mode can be :running, :paused, :step, :next
-      @mode = :running
+      @mode = :running                # mode can be :running, :paused, :step, :next
       @call_depth = 0                 # call depth counter
-      @next_target_depth = nil        # used for `next` command
+      @next_target_depth = nil        # used for `next` command (will skip over lines when this is > @call_depth)
       @current_tp = nil               # last TracePoint object seen
       @trace = nil                    # reference to TracePoint so it can be disabled later
     end
 
     def start
-      # Set up TracePoint to listen for :line, :call and :return events
-      @trace = TracePoint.new(:line, :call, :return) do |tp|
+      @trace = TracePoint.new(:line, :call, :return) do |tp|                  # Set up TracePoint to listen for :line, :call and :return events
         case tp.event
         when :line
           file = File.expand_path(tp.path)
-          # Pause if we encounter a breakpoint
-          if @session.breakpoints.match?(file, tp.lineno, tp.binding)
+          if @session.breakpoints.match?(file, tp.lineno, tp.binding)         # Pause if a breakpoint is encountered
             pause(tp)
-          # Pause if we're in step mode
-          elsif @mode == :step 
+          elsif @mode == :step                                                # Pause if in step mode
             pause(tp)
-          # If we're in next mode, pause only after we've returned to the original call depth
           elsif @mode == :next
-            if @next_target_depth && @call_depth <= @next_target_depth
+            if @next_target_depth && @call_depth <= @next_target_depth        # If in next mode, pause only after returned to the original call depth
               pause(tp)
             end
           end
         when :call
-          # increment call depth
           @call_depth += 1
         when :return
-          # decrement call depth
           @call_depth -= 1
         end
       end
 
+      # Script will run within enable block
       @trace.enable do
-        yield
+        yield                         
       end
-
+    
+    # After debug, disable the trace to prevent unintended leakage
     ensure
-      # disable the trace to prevent unintended leaking elsewhere
       @trace&.disable
     end
 
@@ -90,7 +84,7 @@ module Debugr
       @mode = :paused
       @current_tp = tp
       repl = REPL.new(self, tp)     # instantiate the REPL with the engine and current TracePoint
-      repl.start                    # when the REPL returns, the user has chosen step/next/continue (or quit)
+      repl.start                    # when the REPL returns, the user has chosen step/next/continue/quit
     end
   end
 end
