@@ -58,14 +58,39 @@ module Debugr
       @trace&.disable
     end
 
+    # REPL helpers
+
+    def step!
+      @mode = :step
+      @next_target_depth = nil
+    end
+
+    def next!
+      @mode = :next
+      @next_target_depth = @call_depth
+    end
+
+    def continue!
+      @mode = :running
+      @next_target_depth = nil
+    end
+
+    # Additional helpers
+    def current_binding
+      @current_tp&.binding
+    end
+
+    def current_location
+      [@current_tp&.path, @current_tp&.lineno]
+    end
+
     private
 
     def pause(tp)
       @mode = :paused
-      puts "Paused at #{tp.path}:#{tp.lineno}"
-      puts "Press ENTER to continue..."
-      gets
-      @mode = :running
+      @current_tp = tp
+      repl = REPL.new(self, tp)     # instantiate the REPL with the engine and current TracePoint
+      repl.start                    # when the REPL returns, the user has chosen step/next/continue (or quit)
     end
   end
 end
