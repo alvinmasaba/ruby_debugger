@@ -14,7 +14,7 @@ module Debugr
   class Engine
     def initialize(session)
       @session = session              # Session object passed from Session.new
-      @mode = :running                # mode can be :running, :paused, :step, :next
+      @mode = :paused                # mode can be :running, :paused, :step, :next
       @call_depth = 0                 # call depth counter
       @next_target_depth = nil        # used for `next` command (will skip over lines when this is > @call_depth)
       @current_tp = nil               # last TracePoint object seen
