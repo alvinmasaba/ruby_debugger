@@ -12,7 +12,7 @@ module Debugr
       @next_id += 1
       bp = Breakpoint.new(id: id, file: File.expand_path(file), line: line)
       @bps << bp
-      @next_id
+      id
     end
     
     def list
@@ -20,7 +20,9 @@ module Debugr
     end
     
     def match?(file, lineno, binding)
-      @bps.any?{ |b| b[:enabled] && b[:file] == File.expand_path(file) && b[:line] == lineno }
+      @bps.any? do |b|
+        b.enabled && b.file == File.expand_path(file) && b.line == lineno
+      end
     end
   end  
 end

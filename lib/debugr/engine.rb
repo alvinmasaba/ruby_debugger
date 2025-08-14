@@ -13,7 +13,7 @@ require_relative "repl"
 module Debugr
   class Engine
     attr_reader :session
-    
+
     def initialize(session)
       @session = session              # Session object passed from Session.new
       @mode = :running                # mode can be :running, :paused, :step, :next
@@ -72,6 +72,7 @@ module Debugr
     end
 
     # Additional helpers
+    
     def current_binding
       @current_tp&.binding
     end
