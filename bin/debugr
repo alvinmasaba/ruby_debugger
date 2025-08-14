@@ -10,4 +10,5 @@ end
 
 script = ARGV.shift
 session = Debugr::Session.new(script, ARGV)
+session.engine.step!
 session.run
