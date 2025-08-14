@@ -8,7 +8,7 @@
 # the target script runs.
 
 require_relative "engine"
-# require_relative "breakpoints"
+require_relative "breakpoints"
 
 module Debugr
   class Session
@@ -21,7 +21,7 @@ module Debugr
       @script_args = args.dup #?
 
       # BreakpointManager stores and matches breakpoints
-      # @breakpoints = BreakpointManager.new
+      @breakpoints = BreakpointManager.new
 
       # The Engine is the component that wraps TracePoint. 'self' is passed so that the engine can consult breakpoints and other session state.
       @engine = Engine.new(self)
