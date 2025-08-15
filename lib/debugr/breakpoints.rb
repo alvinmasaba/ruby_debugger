@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'breakpoint'
 
 module Debugr
@@ -6,7 +8,7 @@ module Debugr
       @bps = []
       @next_id = 1
     end
-    
+
     def add(file, line)
       id = @next_id
       @next_id += 1
@@ -14,15 +16,15 @@ module Debugr
       @bps << bp
       id
     end
-    
+
     def list
       @bps
     end
-    
+
     def match?(file, lineno, binding)
       @bps.any? do |b|
-        b.enabled && b.file == File.expand_path(file) && b.line == lineno
+        b.enabled && b.file == File.expand_path(file) && b.line == lineno && b.binding == binding
       end
     end
-  end  
+  end
 end

@@ -1,11 +1,14 @@
+# frozen_string_literal: true
+
 module Debugr
   class Breakpoint
-    attr_accessor :id, :file, :line, :enabled
+    attr_accessor :id, :file, :line, :binding, :enabled
 
-    def initialize(id:, file:, line:)
+    def initialize(id:, file:, line:, binding:)
       @id = id
       @file = file
       @line = line
+      @binding = binding
       @enabled = true
     end
 
