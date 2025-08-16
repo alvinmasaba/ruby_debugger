@@ -1,18 +1,14 @@
 # frozen_string_literal: true
 
-# This is the top level object that carries a shared state for a debugging run.
-# Knows:
-#   1. Which script will be debugged (@script)
-#   2. Command line args to pass to that script (@script_args)
-#   3. An Engine instance that wires TracePoint and controls execution
-
-# Session#run method sets up the environment (e.g. ARGV) and calls engine.start { load script } so that TracePoint hooks
-# are active while the target script runs.
-
 require_relative 'engine'
 require_relative 'breakpoints'
 
 module Debugr
+  # Session is the top level object that carries a shared state for a debugging run.
+  # It knows which script will be debugged (@script), the Command line args to pass to
+  # that script (@script_args) and has an Engine instance that wires TracePoint and controls
+  # execution. Session#run method sets up the environment (e.g. ARGV) and calls
+  # engine.start { load script }so that TracePoint hooks are active while the target script runs.
   class Session
     attr_reader :script, :script_args, :breakpoints, :engine
 

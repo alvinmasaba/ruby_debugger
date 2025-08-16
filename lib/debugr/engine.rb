@@ -1,18 +1,13 @@
 # frozen_string_literal: true
 
-# This Engine is the core of the debugger. It's responsibilities are to:
-#   1. Enable a TracePoint for noteworthy events (:line, :call, :return etc...)
-#   2. Track call depth so `next` can be implemented
-#   3. On each :line event pause when:
-#       - a breakpoint matches
-#       - at each step
-#       - on next when returned to or above the target depth
-#   4. On pause, run a REPL that uses tp.binding to inspect / eval
-
 require_relative 'breakpoints'
 require_relative 'repl'
 
 module Debugr
+  # The Engine is responsible for managing execution flow. It uses Ruby's
+  # TracePoint API to intercept events like line execution, method calls,
+  # and returns. It maintains the debugger's state (e.g., :running, :step,
+  # :next) and decides when to pause execution and launch the REPL.
   class Engine
     attr_reader :session
 
@@ -23,6 +18,7 @@ module Debugr
       @next_target_depth = nil        # used for `next` command (will skip over lines when this is > @call_depth)
       @current_tp = nil               # last TracePoint object seen
       @trace = nil                    # reference to TracePoint so it can be disabled later
+      @debugger_dir = File.expand_path(__dir__)
     end
 
     def start(&block)
@@ -79,7 +75,13 @@ module Debugr
     end
 
     def handle_event(tp)
+      unless @user_started
+        @user_started = true
+        @call_depth = 0
+      end
+
       abs = get_abs_path(tp.path)
+
       case tp.event
       when :call
         @call_depth += 1
@@ -119,6 +121,9 @@ module Debugr
 
       # Get the absolute path. Handle potential errors gracefully.
       abs_path = get_abs_path(path)
+
+      # Exclude frames from the debugger's own files
+      return false if abs_path.start_with?(@debugger_dir)
 
       # Cache the target directory to avoid repeated lookups.
       @target_dir ||= @session.respond_to?(:script_dir) ? @session.script_dir : @session.instance_variable_get(:@script_dir)

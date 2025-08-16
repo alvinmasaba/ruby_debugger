@@ -12,7 +12,7 @@ module Debugr
       @engine = engine
       @tp = tp
       @session = begin
-        @engine.instance_variable_get(:session)
+        @engine.instance_variable_get(:@session)
       rescue StandardError
         nil
       end
@@ -44,11 +44,9 @@ module Debugr
         when 'q', 'quit', 'exit'
           puts 'Exiting debugger...'
           exit 0
-        when 'p'
-          puts 'Usage: p <expression>' if arg.nil?
-        when 'eval' # alias for p
+        when 'p', 'eval'
           if arg.nil?
-            puts 'Usage: eval <ruby_code>'
+            puts "Usage: #{cmd} <ruby_code>"
           else
             safe_eval_and_print(arg)
           end
@@ -83,17 +81,17 @@ module Debugr
         input
       else
         print prompt
-        STDIN.gets&.chomp
+        $stdout.gets&.chomp
       end
     end
 
     # Evaluate code string in the paused frame binding and print the result
-    def safe_eval_and_print
+    def safe_eval_and_print(code_to_eval)
       b = @tp.binding
       begin
-        result = b.eval(code)
+        result = b.eval(code_to_eval)
         puts "=> #{result.inspect}"
-      rescue Exception => e
+      rescue StandardError => e
         puts "Eval error: #{e.class}: #{e.message}"
       end
     end
@@ -109,7 +107,7 @@ module Debugr
       names.each do |name|
         value = b.eval(name.to_s)
         puts "#{name} = #{value.inspect}"
-      rescue Exception => e
+      rescue StandardError => e
         puts "#{name} = <error: #{e.class}>"
       end
     end
@@ -123,8 +121,9 @@ module Debugr
       end
     end
 
-    # Breakpoitn helpers - warn if session or breakpoints aren't implemented
-    def add_breakpoint
+    # Breakpoint helpers - warn if session or breakpoints aren't implemented
+    def add_breakpoint(arg)
+      binding = @tp.binding
       if arg.nil? || arg.strip.empty?
         puts 'Usage: b file.rb:line   or  b line (uses current file)'
         return
@@ -146,7 +145,7 @@ module Debugr
         line = arg.to_i
       end
 
-      id = bp_manager.add(file, line)
+      id = bp_manager.add(file, line, binding)
       puts "Breakpoint ##{id} set at #{file}:#{line}"
     end
 

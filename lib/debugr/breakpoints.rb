@@ -9,10 +9,10 @@ module Debugr
       @next_id = 1
     end
 
-    def add(file, line)
+    def add(file, line, binding)
       id = @next_id
       @next_id += 1
-      bp = Breakpoint.new(id: id, file: File.expand_path(file), line: line)
+      bp = Breakpoint.new(id: id, file: File.expand_path(file), line: line, binding: binding)
       @bps << bp
       id
     end

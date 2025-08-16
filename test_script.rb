@@ -1,38 +1,24 @@
-def inner
-  puts "hi from inner"
+# frozen_string_literal: true
+
+# Basic method
+def add(x, y)
+  x + y # Line #5: test locals and eval z here
 end
 
-def outer
-  a = 1           # Line 6
-  inner           # Line 7
-  b = 2           # Line 8
+# A method that calls another method.
+def calculate
+  a = 10        # Line 10
+  b = add(a, 5) # Line 11
+  b * 2 # Line 12
 end
 
-target_depth = nil
+puts 'Starting script...' # Line 15
 
-trace = TracePoint.new(:call, :return, :line) do |tp|
-  current_depth = caller.size
-
-  case tp.event
-  when :line
-    puts "[line] #{tp.path}:#{tp.lineno}, depth=#{current_depth}"
-
-    if target_depth && current_depth == target_depth
-      puts ">>> pausing here at #{tp.lineno}"
-      target_depth = nil
-      binding.irb # simulate pause
-    end
-
-  when :call
-    puts "[call] #{tp.defined_class}##{tp.method_id}, depth=#{current_depth}"
-
-  when :return
-    puts "[return] #{tp.defined_class}##{tp.method_id}, depth=#{current_depth}"
-  end
+# A loop to test breakpoints and continue.
+(1..3).each do |i|
+  puts "Loop iteration: #{i}" # Line 19: Set a breakpoint here with 'b 19'.
 end
 
-trace.enable
+final_result = calculate # Line 22
 
-# Simulate: paused at line 8 in outer, now run `next`
-target_depth = caller.size + 0 # same depth we’re at now
-outer
+puts "Script finished. Result: #{final_result}" # Line 24
