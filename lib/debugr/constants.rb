@@ -4,7 +4,7 @@ COMMAND_ALIASES = {
   call_next: %w[n next],
   call_step: %w[s step],
   call_continue: %w[c continue],
-  call_quit: %w[q quit],
+  quit!: %w[q quit],
   safe_eval_and_print: %w[p eval],
   call_add_breakpoint: %w[b break],
   list_locals: %w[locals],

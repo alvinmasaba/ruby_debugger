@@ -101,7 +101,7 @@ module Debugr
     def should_pause?(tp, abs)
       file = abs
       # Pause if a breakpoint is encountered
-      @bp_manager = @session.breakpoints_manager
+      @bp_manager = @session.bp_manager
       if @bp_manager&.match?(file, tp.lineno, tp.binding)
         return true
       # Pause after every step

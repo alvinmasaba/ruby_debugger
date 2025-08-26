@@ -6,22 +6,9 @@ rescue StandardError
   nil
 end
 
-require 'constants'
+require_relative 'constants'
 
 # CMD Helpers
-
-def handle_command_line(line)
-  return true if line.strip.empty?
-
-  cmd, arg = parse_command_line(line)
-
-  if COMMANDS.key?(cmd)
-    result = arg.nil? ? send(COMMANDS[cmd]) : send(COMMANDS[cmd], arg)
-    false if result == :break_loop
-  else
-    puts "Unknwon command: #{cmd.inspect}. Type 'help' for commands."
-  end
-end
 
 def parse_command_line(line)
   cmd, *rest = line.strip.split(' ', 2)
@@ -33,7 +20,7 @@ def print_debugger_header(path, lineno)
   puts "Type 'help' for commands."
 end
 
-def print_help
+def print_help(_arg = nil)
   body = HELP_COMMANDS.map do |c, d|
     "    #{c.ljust(18)} - #{d}"
   end.join("\n")

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'constants'
-require 'cmd_helpers'
+require_relative 'cmd_helpers'
+require_relative 'constants'
 
 module Debugr
   # The REPL launches the debugger in the command line.
@@ -9,9 +9,8 @@ module Debugr
     def initialize(engine, tp)
       @engine = engine
       @tp = tp
-      # @session = extract_session(engine)
-      @session = extract_session(@engine)
-      @bp_manager = @session&.breakpoints
+      @session = extract_session
+      @bp_manager = @session&.bp_manager
     end
 
     def start
@@ -21,25 +20,28 @@ module Debugr
 
     private
 
-    def call_next
+    def call_next(_arg = nil)
       @engine.next!
+      :break_loop
     end
 
-    def call_step
+    def call_step(_arg = nil)
       @engine.step!
+      :break_loop
     end
 
-    def call_continue
+    def call_continue(_arg = nil)
       @engine.continue!
+      :break_loop
     end
 
-    def quit!
+    def quit!(_arg = nil)
       puts 'Exiting debugger...'
       exit 0
     end
 
-    def extract_session(engine)
-      engine.instance_variable_get(:@session)
+    def extract_session
+      @engine.instance_variable_get(:@session)
     rescue StandardError
       nil
     end
@@ -50,7 +52,20 @@ module Debugr
         # End of file -> quit
         break if line.nil?
 
-        next if handle_command_line(line)
+        break if handle_command(line) == :break_loop
+      end
+    end
+
+    def handle_command(line)
+      return if line.strip.empty?
+
+      cmd, arg = parse_command_line(line)
+      method_name = COMMANDS[cmd]
+
+      if method_name
+        send(method_name, arg)
+      else
+        puts "Unknwon command: #{cmd.inspect}. Type 'help' for commands."
       end
     end
 
@@ -66,7 +81,7 @@ module Debugr
     end
 
     # Print local variables and their values in frame
-    def list_locals
+    def list_locals(_arg = nil)
       b = @tp.binding
       names = b.local_variables
 
@@ -82,7 +97,7 @@ module Debugr
 
     # Display a simple backtrace relevant to paused input.
     # caller_locations is called to keep it simple and reliable
-    def show_backtrace
+    def show_backtrace(_arg = nil)
       puts 'Backtrace (top 10):'
       caller_locations(0, 10).each_with_index do |loc, i|
         puts "  #{i}: #{loc.path}:#{loc.lineno} in #{loc.label}"
@@ -98,10 +113,10 @@ module Debugr
       @bp_manager.add(arg, @tp)
     end
 
-    def call_list_breakpoints
+    def list_breakpoints(_arg = nil)
       return puts 'Breakpoints manager not available (not implemented yet).' unless @bp_manager
 
-      bps = bp_manager.list
+      bps = @bp_manager.list
       if bps.empty?
         puts '(no breakpoints)'
       else

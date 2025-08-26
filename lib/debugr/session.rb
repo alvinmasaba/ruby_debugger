@@ -10,7 +10,7 @@ module Debugr
   # execution. Session#run method sets up the environment (e.g. ARGV) and calls
   # engine.start { load script }so that TracePoint hooks are active while the target script runs.
   class Session
-    attr_reader :script, :script_args, :breakpoints, :engine
+    attr_reader :script, :script_args, :bp_manager, :engine
 
     # Initialize the session with the target script path and any args for that script.
     def initialize(script, args = [])
@@ -19,7 +19,7 @@ module Debugr
       @script_dir = File.dirname(@script) # Will be useful for ignoring internal calls/frames in call depth
 
       # BreakpointManager stores and matches breakpoints
-      @breakpoints_manager = BreakpointManager.new
+      @bp_manager = BreakpointManager.new
 
       # The Engine is the component that wraps TracePoint. 'self' is passed so that the engine can consult breakpoints
       # and other session state.
