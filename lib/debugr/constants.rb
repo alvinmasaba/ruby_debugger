@@ -13,6 +13,10 @@ COMMAND_ALIASES = {
   print_help: %w[help ?]
 }.freeze
 
+COMMANDS = COMMAND_ALIASES.flat_map do |method, keys|
+  keys.map { |key| [key, method] }
+end.to_h.freeze
+
 HELP_COMMANDS = {
   '[n, next]' => 'step over (skip into deeper calls)',
   '[s, step]' => 'step in (pause at next line even inside calls)',
