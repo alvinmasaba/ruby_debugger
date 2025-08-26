@@ -6,83 +6,98 @@ rescue StandardError
   nil
 end
 
+require 'constants'
+
 module Debugr
+  # The REPL launches the debugger in the command line.
   class REPL
+    COMMANDS = COMMAND_ALIASES.flat_map do |method, keys|
+      keys.map { |key| [key, method] }
+    end.to_h.freeze
+
     def initialize(engine, tp)
       @engine = engine
       @tp = tp
-      @session = begin
-        @engine.instance_variable_get(:@session)
-      rescue StandardError
-        nil
-      end
+      # @session = extract_session(engine)
+      @session = extract_session(@engine)
+      @bp_manager = @session&.breakpoints
     end
 
     def start
-      file = @tp.path
-      lineno = @tp.lineno
-      puts "\n[debugr] Paused at #{file}:#{lineno}"
-      puts "Type 'help' for commands."
-
-      loop do
-        line = read_input('(debugr) ')
-        break if line.nil? # End of file -> quit
-
-        cmd, *rest = line.strip.split(' ', 2)
-        arg = rest.first
-
-        case cmd
-        when 'n', 'next'
-          @engine.next!
-          return
-        when 's', 'step'
-          @engine.step!
-          return
-        when 'c', 'continue'
-          @engine.continue!
-          return
-        when 'q', 'quit', 'exit'
-          puts 'Exiting debugger...'
-          exit 0
-        when 'p', 'eval'
-          if arg.nil?
-            puts "Usage: #{cmd} <ruby_code>"
-          else
-            safe_eval_and_print(arg)
-          end
-        when 'locals'
-          list_locals
-        when 'where', 'bt', 'backtrace'
-          show_backtrace
-        when 'b', 'break'
-          # break usage: b filepath:linenumber  OR  b linenumber  (same file)
-          add_breakpoint(arg)
-        when 'breaks', 'breakpoints', 'lb', 'list'
-          list_breakpoints
-        when 'help', '?'
-          print_help
-        else
-          next if line.strip.empty?
-
-          puts "Unknwon command: #{cmd.inspect}. Type 'help' for commands."
-
-        end
-      end
+      print_debugger_header
+      main_debug_loop
     end
 
     private
 
-    # Read input using Readline if it's available, otherwise fall back to STDIN.gets
-    def read_input(prompt)
-      if defined?(Readline) && Readline.respond_to?(:readline)
-        input = Readline.readline(prompt, true)
-        return nil if input.nil?
+    def call_next
+      @engine.next!
+    end
 
-        input
+    def call_step
+      @engine.step!
+    end
+
+    def call_continue
+      @engine.continue!
+    end
+
+    def quit!
+      puts 'Exiting debugger...'
+      exit 0
+    end
+
+    def extract_session(engine)
+      engine.instance_variable_get(:@session)
+    rescue StandardError
+      nil
+    end
+
+    def print_debugger_header
+      puts "\n[debugr] Paused at #{@tp.path}:#{@tp.lineno}"
+      puts "Type 'help' for commands."
+    end
+
+    def main_debug_loop
+      loop do
+        line = read_input('(debugr) ')
+        # End of file -> quit
+        break if line.nil?
+
+        next if handle_command_line(line)
+      end
+    end
+
+    def handle_command_line(line)
+      return true if line.strip.empty?
+
+      cmd, arg = parse_command_line(line)
+
+      if COMMANDS.key?(cmd)
+        result = arg.nil? ? send(COMMANDS[cmd]) : send(COMMANDS[cmd], arg)
+        false if result == :break_loop
+      else
+        puts "Unknwon command: #{cmd.inspect}. Type 'help' for commands."
+      end
+    end
+
+    def parse_command_line(line)
+      cmd, *rest = line.strip.split(' ', 2)
+      [cmd, rest.first]
+    end
+
+    # Read input using Readline if it's available, otherwise fall back to $stdout.gets
+    def read_input(prompt)
+      if readline_available?
+        Readline.readline(prompt, true)
       else
         print prompt
         $stdout.gets&.chomp
       end
+    end
+
+    def readline_available?
+      defined?(Readline) && Readline.respond_to?(:readline)
     end
 
     # Evaluate code string in the paused frame binding and print the result
@@ -100,10 +115,9 @@ module Debugr
     def list_locals
       b = @tp.binding
       names = b.local_variables
-      if names.empty?
-        puts '(no local variables)'
-        return
-      end
+
+      return puts '(no local variables)' if names.empty?
+
       names.each do |name|
         value = b.eval(name.to_s)
         puts "#{name} = #{value.inspect}"
@@ -122,39 +136,27 @@ module Debugr
     end
 
     # Breakpoint helpers - warn if session or breakpoints aren't implemented
-    def add_breakpoint(arg)
-      binding = @tp.binding
-      if arg.nil? || arg.strip.empty?
-        puts 'Usage: b file.rb:line   or  b line (uses current file)'
-        return
-      end
+    def call_add_breakpoint(arg)
+      return puts 'Usage: b file.rb:line   or  b line (uses current file)' if arg.nil? || arg.strip.empty?
 
-      bp_manager = @session&.breakpoints
-      unless bp_manager
-        puts 'Breakpoints manager not available (not implemented yet).'
-        return
-      end
+      return puts 'Breakpoints manager not available (not implemented yet).' unless @bp_manager
 
+      @bp_manager.add(arg, @tp)
+    end
+
+    def determine_file_and_line(arg)
       if arg.include?(':')
         file_str, line_str = arg.split(':', 2)
-        file = File.expand_path(file_str)
-        line = line_str.to_i
+        [File.expand_path(file_str), line_str.to_i]
       else
         # when given just number, assume current file
-        file = @tp.path
-        line = arg.to_i
+        [@tp.path, arg.to_i]
       end
-
-      id = bp_manager.add(file, line, binding)
-      puts "Breakpoint ##{id} set at #{file}:#{line}"
     end
 
     def list_breakpoints
-      bp_manager = @session&.breakpoints
-      unless bp_manager
-        puts 'Breakpoints manager not available (not implemented yet)'
-        return
-      end
+      return puts 'Breakpoints manager not available (not implemented yet).' unless @bp_manager
+
       bps = bp_manager.list
       if bps.empty?
         puts '(no breakpoints)'
@@ -166,19 +168,13 @@ module Debugr
     end
 
     def print_help
+      body = HELP_COMMANDS.map do |c, d|
+        "    #{c.ljust(18)} - #{d}"
+      end.join("\n")
+
       puts <<~HELP
         Commands:
-          n, next           - step over (skip into deeper calls)
-          s, step           - step in (pause at next line even inside calls)
-          c, continue       - continue until next breakpoint or program ends
-          p <expr>          - evaluate Ruby <expr> in current frame and print
-          eval <ruby>       - alias for p
-          locals            - show local variables in current frame
-          where, bt         - display a short backtrace
-          b <file>:<line>   - add breakpoint (if breakpoints manager implemented)
-          breaks, list      - list breakpoints
-          q, quit           - quit debugger and abort program
-          help, ?           - show this helps
+        #{body}
       HELP
     end
   end

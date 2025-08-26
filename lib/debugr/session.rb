@@ -19,7 +19,7 @@ module Debugr
       @script_dir = File.dirname(@script) # Will be useful for ignoring internal calls/frames in call depth
 
       # BreakpointManager stores and matches breakpoints
-      @breakpoints = BreakpointManager.new
+      @breakpoints_manager = BreakpointManager.new
 
       # The Engine is the component that wraps TracePoint. 'self' is passed so that the engine can consult breakpoints
       # and other session state.
