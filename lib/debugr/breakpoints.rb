@@ -12,12 +12,8 @@ module Debugr
     def add(arg, tp)
       binding = tp.binding
       file, line = determine_file_and_line(arg, tp)
-      id = @next_id
+      @bps << Breakpoint.new(id: @next_id, file: File.expand_path(file), line: line, binding: binding)
       @next_id += 1
-      bp = Breakpoint.new(id: id, file: File.expand_path(file), line: line, binding: binding)
-      @bps << bp
-
-      puts "Breakpoint ##{id} set at #{file}:#{line}"
     end
 
     def list

@@ -1,10 +1,10 @@
 #!/usr/bin/env ruby
-#bin/debugr
+# bin/debugr
 
 require_relative '../lib/debugr/session'
 
 if ARGV.empty?
-  puts 'Usage: debugr <script.rb> [args...]'
+  puts 'Usage: debugga <script.rb> [args...]'
   exit 1
 end
 

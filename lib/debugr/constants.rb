@@ -27,6 +27,6 @@ HELP_COMMANDS = {
   '[where, bt]' => 'display a short backtrace',
   '[b <file>:<line>]' => 'add breakpoint (if breakpoints manager implemented)',
   '[breaks, list]' => 'list breakpoints',
-  '[q, quit]' => 'quit debugger and abort program',
+  '[q, quit]' => 'quit debugga and abort program',
   '[help, ?]' => 'show this helps'
 }.freeze

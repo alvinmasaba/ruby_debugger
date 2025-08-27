@@ -16,7 +16,7 @@ def parse_command_line(line)
 end
 
 def print_debugger_header(path, lineno)
-  puts "\n[debugr] Paused at #{path}:#{lineno}"
+  puts "\n[debugga] Paused at #{path}:#{lineno}"
   puts "Type 'help' for commands."
 end
 

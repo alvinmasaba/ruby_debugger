@@ -36,7 +36,7 @@ module Debugr
     end
 
     def quit!(_arg = nil)
-      puts 'Exiting debugger...'
+      puts 'Exiting debugga...'
       exit 0
     end
 
@@ -48,7 +48,7 @@ module Debugr
 
     def main_debug_loop
       loop do
-        line = read_input('(debugr) ')
+        line = read_input('(debugga) ')
         # End of file -> quit
         break if line.nil?
 
@@ -116,6 +116,9 @@ module Debugr
       return puts 'Breakpoints manager not available (not implemented yet).' unless @bp_manager
 
       @bp_manager.add(arg, @tp)
+      bp = @bp_manager.list.last
+
+      puts "Breakpoint ##{bp.id} set at #{bp.file}:#{bp.line}"
     end
 
     def list_breakpoints(_arg = nil)
