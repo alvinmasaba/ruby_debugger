@@ -2,6 +2,7 @@
 
 require_relative 'engine'
 require_relative 'breakpoints'
+require_relative 'file_helpers'
 
 module Debugr
   # Session is the top level object that carries a shared state for a debugging run.
@@ -10,13 +11,13 @@ module Debugr
   # execution. Session#run method sets up the environment (e.g. ARGV) and calls
   # engine.start { load script }so that TracePoint hooks are active while the target script runs.
   class Session
-    attr_reader :script, :script_args, :bp_manager, :engine
+    attr_reader :script, :script_args, :script_dir, :bp_manager, :engine
 
     # Initialize the session with the target script path and any args for that script.
     def initialize(script, args = [])
-      @script = File.expand_path(script)
+      @script = get_abs_path(script)
       @script_args = args.dup
-      @script_dir = File.dirname(@script) # Will be useful for ignoring internal calls/frames in call depth
+      @script_dir = "#{File.dirname(@script)}/lib" # Will be useful for ignoring internal calls/frames in call depth
 
       # BreakpointManager stores and matches breakpoints
       @bp_manager = BreakpointManager.new

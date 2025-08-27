@@ -36,10 +36,10 @@ end
 # Read input using Readline if it's available, otherwise fall back to $stdout.gets
 def read_input(prompt)
   if readline_available?
-    Readline.readline(prompt, true)
+    Readline.readline(prompt, true).downcase!
   else
     print prompt
-    $stdout.gets&.chomp
+    $stdout.gets&.chomp&.downcase!
   end
 end
 

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative 'breakpoints'
+require_relative 'file_helpers'
 require_relative 'repl'
 
 module Debugr
@@ -18,7 +19,7 @@ module Debugr
       @next_target_depth = nil        # used for `next` command (will skip over lines when this is > @call_depth)
       @current_tp = nil               # last TracePoint object seen
       @trace = nil                    # reference to TracePoint so it can be disabled later
-      @debugger_dir = File.expand_path(__dir__)
+      @debugger_dir = @session.script_dir
     end
 
     def start(&block)
@@ -80,7 +81,7 @@ module Debugr
         @call_depth = 0
       end
 
-      abs = get_abs_path(tp.path)
+      file = get_abs_path(tp.path)
 
       case tp.event
       when :call
@@ -88,27 +89,18 @@ module Debugr
       when :return
         @call_depth -= 1
       when :line
-        pause(tp) if should_pause?(tp, abs)
+        pause(tp) if should_pause?(tp, file)
       end
     end
 
-    def get_abs_path(path)
-      File.expand_path(path)
-    rescue StandardError
-      path
-    end
-
-    def should_pause?(tp, abs)
-      file = abs
-      # Pause if a breakpoint is encountered
+    def should_pause?(tp, file)
       @bp_manager = @session.bp_manager
-      if @bp_manager&.match?(file, tp.lineno, tp.binding)
-        return true
-      # Pause after every step
-      elsif @mode == :step
+
+      # Pause at each breakpoint/after each step
+      if @bp_manager&.match?(file, tp.lineno, tp.binding) || @mode == :step
         return true
       elsif @mode == :next
-        # Pause only after returned to or above the original call depth
+        # ON `next`, pause only after returned to or above the original call depth
         return @next_target_depth && @call_depth <= @next_target_depth
       end
 
@@ -117,7 +109,7 @@ module Debugr
 
     def should_process_path?(tp)
       path = tp.path
-      return false if path.nil? || path.start_with?('<internal:')
+      return false if path.nil? || path_internal?(path)
 
       # Get the absolute path. Handle potential errors gracefully.
       abs_path = get_abs_path(path)
@@ -126,13 +118,17 @@ module Debugr
       return false if abs_path.start_with?(@debugger_dir)
 
       # Cache the target directory to avoid repeated lookups.
-      @target_dir ||= @session.respond_to?(:script_dir) ? @session.script_dir : @session.instance_variable_get(:@script_dir)
+      @target_dir ||= cache_dir
 
       # If no target directory is set, assume all paths are valid.
       return true unless @target_dir
 
       # Check if the path is the main script or within the script's directory.
       abs_path == @session.script || abs_path.start_with?(@target_dir)
+    end
+
+    def cache_dir
+      @session.respond_to?(:script_dir) ? @session.script_dir : @session.instance_variable_get(:@script_dir)
     end
   end
 end

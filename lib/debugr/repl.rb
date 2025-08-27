@@ -98,9 +98,14 @@ module Debugr
     # Display a simple backtrace relevant to paused input.
     # caller_locations is called to keep it simple and reliable
     def show_backtrace(_arg = nil)
-      puts 'Backtrace (top 10):'
-      caller_locations(0, 10).each_with_index do |loc, i|
-        puts "  #{i}: #{loc.path}:#{loc.lineno} in #{loc.label}"
+      puts 'Program backtrace (top 10):'
+      begin
+        b = @tp.binding
+        b.eval('caller_locations(0, 10)').each_with_index do |loc, i|
+          puts "  #{i}: #{loc.path}:#{loc.lineno} in #{loc.label}"
+        end
+      rescue StandardError => e
+        puts "Could not fetch program backtrace: #{e.class}: #{e.message}"
       end
     end
 
