@@ -76,11 +76,7 @@ module Debugr
     end
 
     def handle_event(tp)
-      unless @user_started
-        @user_started = true
-        @call_depth = 0
-      end
-
+      user_started?
       file = get_abs_path(tp.path)
 
       case tp.event
@@ -91,6 +87,13 @@ module Debugr
       when :line
         pause(tp) if should_pause?(tp, file)
       end
+    end
+
+    def user_started?
+      return if @user_started
+
+      @user_started = true
+      @call_depth = 0
     end
 
     def should_pause?(tp, file)

@@ -2,6 +2,7 @@
 
 require 'rspec'
 require 'tmpdir'
+require 'support/engine_helpers'
 
 # Load library
 $LOAD_PATH.unshift(File.expand_path('../lib', __dir__))

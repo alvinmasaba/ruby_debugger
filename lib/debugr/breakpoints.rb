@@ -22,11 +22,11 @@ module Debugr
       @bps
     end
 
-    # def match?(file, lineno, binding)
-    #   @bps.any? do |b|
-    #     b.enabled && b.file == File.expand_path(file) && b.line == lineno && b.binding == binding
-    #   end
-    # end
+    def match?(file, lineno, binding)
+      @bps.any? do |b|
+        b.enabled && b.file == File.expand_path(file) && b.line == lineno && b.binding == binding
+      end
+    end
 
     private
 
