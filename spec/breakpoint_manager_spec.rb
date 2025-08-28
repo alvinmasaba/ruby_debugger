@@ -47,7 +47,4 @@ RSpec.describe Debugr::BreakpointManager do
       end
     end
   end
-
-  describe '#match' do
-  end
 end

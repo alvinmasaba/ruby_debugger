@@ -3,6 +3,8 @@
 require_relative 'breakpoint'
 
 module Debugr
+  # BreakpointManager manages breakpoints within a session. Can add a new breakpoint as well as list
+  # all breakpoints.
   class BreakpointManager
     def initialize
       @bps = []
@@ -20,11 +22,11 @@ module Debugr
       @bps
     end
 
-    def match?(file, lineno, binding)
-      @bps.any? do |b|
-        b.enabled && b.file == File.expand_path(file) && b.line == lineno && b.binding == binding
-      end
-    end
+    # def match?(file, lineno, binding)
+    #   @bps.any? do |b|
+    #     b.enabled && b.file == File.expand_path(file) && b.line == lineno && b.binding == binding
+    #   end
+    # end
 
     private
 

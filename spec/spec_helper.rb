@@ -17,6 +17,5 @@ RSpec.configure do |config|
     c.syntax = :expect
   end
 
-  # show full diff for failures
-  config.default_formatter = 'doc' if config.files_to_run.one?
+  config.default_formatter = 'doc' # if config.files_to_run.one? # show full diff for failures
 end
