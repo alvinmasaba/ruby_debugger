@@ -11,10 +11,8 @@ RSpec.describe Debugr::BreakpointManager do
   end
 
   describe '#add' do
-    it 'creates a new breakpoint' do
-      manager.add('10', tp_double)
-      bp = manager.list.first
-
+    it 'creates and returns a breakpoint' do
+      bp = manager.add('10', tp_double)
       expect(bp).to be_a(Debugr::Breakpoint)
     end
 
@@ -23,14 +21,25 @@ RSpec.describe Debugr::BreakpointManager do
     end
 
     it 'assigns a unique, incrementing id' do
-      manager.add('10', tp_double)
-      manager.add('11', tp_double)
-
-      first_bp = manager.list.first
-      last_bp = manager.list.last
+      first_bp = manager.add('10', tp_double)
+      last_bp = manager.add('11', tp_double)
 
       expect(first_bp.id).to eq(1)
       expect(last_bp.id).to eq(2)
+    end
+
+    it 'adds a breakpoint using numeric arg and tracepoint' do
+      bp = manager.add('10', tp_double)
+
+      expect(bp.file).to eq(file)
+      expect(bp.line).to eq(10)
+    end
+
+    it 'adds a breakpoint using file:line arg and tracepoint' do
+      bp = manager.add("#{file}:20", tp_double)
+
+      expect(bp.file).to eq(file)
+      expect(bp.line).to eq(20)
     end
   end
 
@@ -45,6 +54,22 @@ RSpec.describe Debugr::BreakpointManager do
       breakpoints.each do |bp|
         expect(bp).to be_a(Debugr::Breakpoint)
       end
+    end
+  end
+
+  describe '#match?' do
+    it 'matches an enabled breakpoint by file and line' do
+      manager.add("#{file}:30", tp_double)
+
+      expect(manager.match?(file, 30, tp_double.binding)).to be true
+      expect(manager.match?(file, 31, tp_double.binding)).to be false
+    end
+
+    it 'does not match disabled breakpoints' do
+      bp = manager.add("#{file}:30", tp_double)
+      bp.disable
+
+      expect(manager.match?(file, 30, tp_double.binding)).to_not be true
     end
   end
 end

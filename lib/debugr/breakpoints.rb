@@ -14,8 +14,10 @@ module Debugr
     def add(arg, tp)
       binding = tp.binding
       file, line = determine_file_and_line(arg, tp)
-      @bps << Breakpoint.new(id: @next_id, file: File.expand_path(file), line: line, binding: binding)
+      bp = Breakpoint.new(id: @next_id, file: File.expand_path(file), line: line, binding: binding)
       @next_id += 1
+      @bps << bp
+      bp
     end
 
     def list
