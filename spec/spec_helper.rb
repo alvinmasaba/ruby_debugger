@@ -2,6 +2,7 @@
 
 require 'rspec'
 require 'tmpdir'
+require 'support/test_helpers'
 require 'support/engine_helpers'
 
 # Load library
