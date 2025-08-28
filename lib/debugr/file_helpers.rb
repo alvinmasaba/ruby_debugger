@@ -9,3 +9,7 @@ end
 def path_internal?(path)
   path.start_with?('<internal:')
 end
+
+def add_trailing_slash(path)
+  path.end_with?(File::SEPARATOR) ? path : path + File::SEPARATOR
+end

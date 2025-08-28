@@ -17,13 +17,10 @@ module Debugr
     def initialize(script, args = [])
       @script = get_abs_path(script)
       @script_args = args.dup
-      @script_dir = "#{File.dirname(@script)}/lib" # Will be useful for ignoring internal calls/frames in call depth
-
-      # BreakpointManager stores and matches breakpoints
+      @script_dir = File.dirname(@script) # Target script directory
       @bp_manager = BreakpointManager.new
 
-      # The Engine is the component that wraps TracePoint. 'self' is passed so that the engine can consult breakpoints
-      # and other session state.
+      # 'self' is passed so that the engine can consult breakpoints and other session state.
       @engine = Engine.new(self)
     end
 

@@ -19,7 +19,7 @@ module Debugr
       @next_target_depth = nil        # used for `next` command (will skip over lines when this is > @call_depth)
       @current_tp = nil               # last TracePoint object seen
       @trace = nil                    # reference to TracePoint so it can be disabled later
-      @debugger_dir = @session.script_dir
+      @debugger_dir = File.expand_path(__dir__) # Directory where Debugga lives 'lib/debugr'
     end
 
     def start(&block)
@@ -118,16 +118,25 @@ module Debugr
       abs_path = get_abs_path(path)
 
       # Exclude frames from the debugger's own files
-      return false if abs_path.start_with?(@debugger_dir)
+      debugger_dir = add_trailing_slash(@debugger_dir)
+      return false if abs_path.start_with?(debugger_dir)
 
       # Cache the target directory to avoid repeated lookups.
-      @target_dir ||= cache_dir
+      # @target_dir ||= cache_dir
+
+      # Compute allowed user dir from sessions.script
+      target_script = @session.script
+      target_dir = add_trailing_slash(File.dirname(target_script))
 
       # If no target directory is set, assume all paths are valid.
-      return true unless @target_dir
+      return true unless target_dir && !target_dir.empty?
 
       # Check if the path is the main script or within the script's directory.
-      abs_path == @session.script || abs_path.start_with?(@target_dir)
+      script_or_within_script_dir?(abs_path, target_script, target_dir)
+    end
+
+    def script_or_within_script_dir?(path, script, dir)
+      true if path == script || path.start_with?(dir)
     end
 
     def cache_dir
