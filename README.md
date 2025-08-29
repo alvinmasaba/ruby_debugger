@@ -30,12 +30,13 @@ chmod +x bin/debugr
 ./bin/debugr test_script.rb
 ```
 ## Common Commands
-- s or step - step into next executed line
-- n or next - step over (next at this call depth)
-- c or continue - resume until next breakpoint or program end
+- s[tep] - step into next executed line
+- n[ext] - step over (next at this call depth)
+- c[ontinue] - resume until next breakpoint or program end
 - p or eval - evaluate Ruby in the current frame
-- b file:line - add breakpoint
-- q or quit - exit debugga
+- b[reak] <file:line> - add breakpoint
+- locals - display local variables
+- q[uit] - exit debugga
 ## Run Tests
 ```bash
 bundle exec rspec
