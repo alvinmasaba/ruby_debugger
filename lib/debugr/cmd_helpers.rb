@@ -31,8 +31,6 @@ def print_help(_arg = nil)
   HELP
 end
 
-# Readline Helpers
-
 # Read input using Readline if it's available, otherwise fall back to $stdout.gets
 def read_input(prompt)
   if readline_available?
@@ -48,4 +46,17 @@ end
 
 def readline_available?
   defined?(Readline) && Readline.respond_to?(:readline)
+end
+
+def banner
+  font = "
+          __________
+         /  ____   /________________          ________________________
+        /  /   /  /  _____/  ___   /         /  _________/  _________/
+       /  /   /  /  /____/  /_ /  /__    ___/  /  ______/  /  ________________
+      /  /   /  /  _____/  ___   /  /   /  /  /  /__   /  /  /__   /  ____    |
+     /  /___/  /  /____/  /_ /  /  /___/  /  /_____/  /  /_____/  /  /___/ |  |
+    /_________/_______/________/_________/___________/___________/________/|__| "
+
+  puts font
 end
