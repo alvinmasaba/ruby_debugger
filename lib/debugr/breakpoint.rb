@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Debugr
+  # Class for creating and enabling/disabling breakpoints
   class Breakpoint
     attr_accessor :id, :file, :line, :binding, :enabled
 

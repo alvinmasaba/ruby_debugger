@@ -7,6 +7,7 @@ rescue StandardError
 end
 
 require_relative 'constants'
+require_relative 'terminal_colors'
 
 # CMD Helpers
 
@@ -48,7 +49,11 @@ def readline_available?
   defined?(Readline) && Readline.respond_to?(:readline)
 end
 
-def banner
+def color(text, color_name)
+  TerminalColors.colorize(text, color_name)
+end
+
+def print_banner
   font = "
           __________
          /  ____   /________________          ________________________
@@ -58,5 +63,5 @@ def banner
      /  /___/  /  /____/  /_ /  /  /___/  /  /_____/  /  /_____/  /  /___/ |  |
     /_________/_______/________/_________/___________/___________/________/|__| "
 
-  puts font
+  puts color(font, :green)
 end

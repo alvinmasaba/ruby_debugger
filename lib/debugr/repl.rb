@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require_relative 'cmd_helpers'
-require_relative 'constants'
+require_relative 'utils/cmd_helpers'
+require_relative 'utils/constants'
 
 module Debugr
   # The REPL launches the debugger in the command line.

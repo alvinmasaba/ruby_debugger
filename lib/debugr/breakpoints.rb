@@ -3,8 +3,7 @@
 require_relative 'breakpoint'
 
 module Debugr
-  # BreakpointManager manages breakpoints within a session. Can add a new breakpoint as well as list
-  # all breakpoints.
+  # Class for managing breakpoints within a session. Can add, match and list breakpoints.
   class BreakpointManager
     def initialize
       @bps = []

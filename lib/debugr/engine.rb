@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
 require_relative 'breakpoints'
-require_relative 'file_helpers'
 require_relative 'repl'
+require_relative 'utils/file_helpers'
+require_relative 'utils/cmd_helpers'
 
 module Debugr
   # The Engine is responsible for managing execution flow. It uses Ruby's
@@ -23,6 +24,7 @@ module Debugr
     end
 
     def start(&block)
+      print_banner
       # Create a tracepoint and store in instance variable (will listen for :line, :call, :return events)
       @trace = TracePoint.new(:line, :call, :return) do |tp|
         # Skip entirely if path is nil or internal frame or if it's not part of target code.

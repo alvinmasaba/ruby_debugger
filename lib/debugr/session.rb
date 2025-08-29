@@ -2,7 +2,7 @@
 
 require_relative 'engine'
 require_relative 'breakpoints'
-require_relative 'file_helpers'
+require_relative 'utils/file_helpers'
 
 module Debugr
   # Session is the top level object that carries a shared state for a debugging run.
