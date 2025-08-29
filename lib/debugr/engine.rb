@@ -4,6 +4,7 @@ require_relative 'breakpoints'
 require_relative 'repl'
 require_relative 'utils/file_helpers'
 require_relative 'utils/cmd_helpers'
+require_relative 'utils/engine_helpers'
 
 module Debugr
   # The Engine is responsible for managing execution flow. It uses Ruby's
@@ -114,35 +115,22 @@ module Debugr
 
     def should_process_path?(tp)
       path = tp.path
-      return false if path.nil? || path_internal?(path)
+      return false if empty_or_internal?(path)
 
-      # Get the absolute path. Handle potential errors gracefully.
+      # Get the absolute path
       abs_path = get_abs_path(path)
 
       # Exclude frames from the debugger's own files
-      debugger_dir = add_trailing_slash(@debugger_dir)
-      return false if abs_path.start_with?(debugger_dir)
-
-      # Cache the target directory to avoid repeated lookups.
-      # @target_dir ||= cache_dir
+      return false if within_debugger_dir(@debugger_dir, abs_path)
 
       # Compute allowed user dir from sessions.script
-      target_script = @session.script
-      target_dir = add_trailing_slash(File.dirname(target_script))
+      target_script, target_dir = target_dir_and_script(@session)
 
       # If no target directory is set, assume all paths are valid.
       return true unless target_dir && !target_dir.empty?
 
       # Check if the path is the main script or within the script's directory.
       script_or_within_script_dir?(abs_path, target_script, target_dir)
-    end
-
-    def script_or_within_script_dir?(path, script, dir)
-      true if path == script || path.start_with?(dir)
-    end
-
-    def cache_dir
-      @session.respond_to?(:script_dir) ? @session.script_dir : @session.instance_variable_get(:@script_dir)
     end
   end
 end
