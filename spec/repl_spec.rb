@@ -13,7 +13,7 @@ RSpec.describe Debugr::REPL do
 
   context 'step' do
     before(:each) do
-      expect(engine).to receive(:step!)
+      expect(engine).to receive(:step!
     end
 
     it "calls engine.step! for 's'" do
