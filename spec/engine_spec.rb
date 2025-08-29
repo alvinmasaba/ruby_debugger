@@ -4,11 +4,56 @@ require 'spec_helper'
 
 RSpec.describe Debugr::Engine do
   let(:script_path) { File.expand_path('tmp/script.rb', Dir.pwd) }
-  let(:session) do
-    # minimal session double exposing script and script_dir and bp_manager
-    OpenStruct.new(script: script_path, bp_manager: nil)
-  end
+  let(:session) { OpenStruct.new(script: script_path, bp_manager: nil) }
   subject(:engine) { described_class.new(session) }
+
+  describe '#should_pause?' do
+    it 'returns true at a breakpoint' do
+      bp_manager = Debugr::BreakpointManager.new
+      session.bp_manager = bp_manager
+      bp_manager.add('99', OpenStruct.new(path: script_path))
+
+      expect(engine.send(:should_pause?, OpenStruct.new(event: :line, lineno: 99), script_path)).to be true
+    end
+
+    it 'returns true when mode is :step' do
+      engine.step!
+      expect(engine.send(:should_pause?, OpenStruct.new(event: :line, lineno: 99), script_path)).to be true
+    end
+
+    context 'when mode is :next' do
+      before(:each) do
+        engine.instance_variable_set(:@user_started, true) # prevents depth from resetting on tests
+        engine.instance_variable_set(:@call_depth, 5)
+        engine.next! # @next_target_depth == 5
+      end
+
+      it 'returns true when at the original call depth' do
+        expect(engine.send(:should_pause?, OpenStruct.new(event: :line, lineno: 10), script_path)).to be true
+      end
+
+      it 'returns true when above the original call depth' do
+        engine.send(:handle_event, build_tp(event: :return, path: script_path, lineno: 75)) # call_depth == 4
+        engine.send(:handle_event, build_tp(event: :return, path: script_path, lineno: 28)) # call_depth == 3
+
+        expect(engine.send(:should_pause?, OpenStruct.new(event: :line, lineno: 10), script_path)).to be true
+      end
+
+      it 'returns false when deeper than original call depth' do
+        engine.send(:handle_event, build_tp(event: :call, path: script_path, lineno: 10)) # call_depth == 6
+
+        expect(engine.send(:should_pause?, OpenStruct.new(event: :line, lineno: 11), script_path)).to be false
+      end
+    end
+
+    it 'returns false when not at breakpoint AND mode is not :step or :next' do
+      engine.continue! # sets mode to :running
+
+      # Session.bp_manager is nil so there are no breakpoints
+
+      expect(engine.send(:should_pause?, OpenStruct.new(event: :line, lineno: 99), script_path)).to be false
+    end
+  end
 
   describe '#should_process_path?' do
     it 'rejects nil paths' do

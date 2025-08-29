@@ -6,9 +6,7 @@ RSpec.describe Debugr::BreakpointManager do
   subject(:manager) { described_class.new }
 
   let(:file) { File.expand_path('some_file.rb', Dir.pwd) }
-  let(:tp_double) do
-    instance_double(TracePoint, binding: binding, path: file)
-  end
+  let(:tp_double) { instance_double(TracePoint, binding: binding, path: file) }
 
   describe '#add' do
     it 'creates and returns a breakpoint' do
