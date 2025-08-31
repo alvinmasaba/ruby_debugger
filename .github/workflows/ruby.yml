@@ -37,7 +37,7 @@ jobs:
           ruby-version: ${{ matrix.ruby-version }}
           # Use an older bundler that works on Ruby 2.7 / 3.0. This prevents
           # the setup action from failing when Gemfile.lock lists a newer bundler.
-          bundler-version: '2.4.13'
+          bundler: '2.4.13'
       
       - name: Debug info
         run: |
