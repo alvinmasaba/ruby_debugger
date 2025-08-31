@@ -50,7 +50,7 @@ jobs:
       - name: Install bundler (match lockfile when possible)
         run: |
           set -e
-          BUNDLED_WITH=$(awk 'BUNDLED_WITH/{getline; print $1}' Gemfile.lock || true)
+          BUNDLED_WITH=$(awk '/BUNDLED_WITH/{getline; print $1}' Gemfile.lock || true)
           RUBY_VER=$(ruby -e 'print RUBY_VERSION)
           echo "Runner Ruby: $RUBY_VER"
           echo "Gemfile.lock requests bundler: ${BUNDLED_WITH:-(none)}"
