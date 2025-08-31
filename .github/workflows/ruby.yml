@@ -35,13 +35,15 @@ jobs:
       # uses: ruby/setup-ruby@55283cc23133118229fd3f97f9336ee23a179fcf # v1.146.0
         with:
           ruby-version: ${{ matrix.ruby-version }}
-          # bundler-cache: true # runs 'bundle install' and caches installed gems automatically
+          # Use an older bundler that works on Ruby 2.7 / 3.0. This prevents
+          # the setup action from failing when Gemfile.lock lists a newer bundler.
+          bundler-version: '2.4.13'
       
       - name: Debug info
         run: |
           echo "=== runner info ==="
           ruby -v
-          gem env
+          gem -v
           bundle -v || true
           uname -a
           echo "=== Gemfile.lock Bundled with ==="
@@ -51,7 +53,7 @@ jobs:
         run: |
           set -e
           BUNDLED_WITH=$(awk '/BUNDLED_WITH/{getline; print $1}' Gemfile.lock || true)
-          RUBY_VER=$(ruby -e 'print RUBY_VERSION)
+          RUBY_VER=$(ruby -e 'print RUBY_VERSION')
           echo "Runner Ruby: $RUBY_VER"
           echo "Gemfile.lock requests bundler: ${BUNDLED_WITH:-(none)}"
   
