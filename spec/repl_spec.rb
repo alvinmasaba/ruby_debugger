@@ -64,4 +64,8 @@ RSpec.describe Debugr::REPL do
       expect { repl_cmds.public_send(:safe_eval_and_print, '1+1') }.to output(/=> 2/).to_stdout
     end
   end
+
+  it 'rejects unknown commands' do
+    expect { repl.send(:handle_command, 'nope') }.to output(/Unknown command/).to_stdout
+  end
 end
