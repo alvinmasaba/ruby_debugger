@@ -60,7 +60,8 @@ RSpec.describe Debugr::REPL do
       allow(fake_binding).to receive(:eval).with('1+1').and_return(2)
 
       repl.instance_variable_set(:@tp, tp)
-      expect { repl.send(:safe_eval_and_print, '1+1') }.to output(/=> 2/).to_stdout
+      repl_cmds = repl.instance_variable_get(:@cmd_obj)
+      expect { repl_cmds.public_send(:safe_eval_and_print, '1+1') }.to output(/=> 2/).to_stdout
     end
   end
 end

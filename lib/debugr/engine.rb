@@ -7,10 +7,9 @@ require_relative 'utils/cmd_helpers'
 require_relative 'utils/engine_helpers'
 
 module Debugr
-  # The Engine is responsible for managing execution flow. It uses Ruby's
-  # TracePoint API to intercept events like line execution, method calls,
-  # and returns. It maintains the debugger's state (e.g., :running, :step,
-  # :next) and decides when to pause execution and launch the REPL.
+  # The Engine is responsible for managing execution flow. It uses TracePoint to intercept events like line execution,
+  # method calls,and returns. It maintains the debugger's state (e.g., :running, :step, :next) and decides when to
+  # pause execution and launch the REPL.
   class Engine
     attr_reader :session
 
@@ -57,16 +56,6 @@ module Debugr
     def continue!
       @mode = :running
       @next_target_depth = nil
-    end
-
-    # Additional helpers
-
-    def current_binding
-      @current_tp&.binding
-    end
-
-    def current_location
-      [@current_tp&.path, @current_tp&.lineno]
     end
 
     private
@@ -132,5 +121,13 @@ module Debugr
       # Check if the path is the main script or within the script's directory.
       script_or_within_script_dir?(abs_path, target_script, target_dir)
     end
+
+    # def current_binding
+    #   @current_tp&.binding
+    # end
+
+    # def current_location
+    #   [@current_tp&.path, @current_tp&.lineno]
+    # end
   end
 end
