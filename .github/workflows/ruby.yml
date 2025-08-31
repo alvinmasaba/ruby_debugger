@@ -48,29 +48,6 @@ jobs:
           uname -a
           echo "=== Gemfile.lock Bundled with ==="
           awk '/BUNDLED WITH/{getline; print $1}' Gemfile.lock || true
-      
-      - name: Install bundler (match lockfile when possible)
-        run: |
-          set -e
-          BUNDLED_WITH=$(awk '/BUNDLED_WITH/{getline; print $1}' Gemfile.lock || true)
-          RUBY_VER=$(ruby -e 'print RUBY_VERSION')
-          echo "Runner Ruby: $RUBY_VER"
-          echo "Gemfile.lock requests bundler: ${BUNDLED_WITH:-(none)}"
-  
-          if [ -n "$BUNDLED_WITH" ]; then
-          # if runner ruby >= 3.1, install the bundler from lockfile
-            ruby -e "require 'rubygems'; exit Gem::Version.new('$RUBY_VER') >= Gem::Version.new('3.1.') ? 0 : 1"
-            if [ $? -eq 0 ]; then
-              echo "Installing bundler $BUNDLED_WITH"
-              gem install bundler -v "$BUNDLED_WITH"
-            else
-              echo "Runner Ruby < 3.1; installing a compatible bundler (~> 2.4)"
-              gem install bundler -v '~> 2.4' || gem install bundler
-            fi
-          else
-            echo "No BUNDLED_WITH in Gemfile.lock; installing default bundler'
-            gem install bundler || true
-          fi
           
       - name: Ensure linux platform in lockfile (safe no-op if already present)
         run: |
