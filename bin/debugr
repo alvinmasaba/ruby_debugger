@@ -1,5 +1,4 @@
 #!/usr/bin/env ruby
-# bin/debugr
 
 require_relative '../lib/debugr/session'
 
