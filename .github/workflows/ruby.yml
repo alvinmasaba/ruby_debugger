@@ -38,7 +38,18 @@ jobs:
           # Use an older bundler that works on Ruby 2.7 / 3.0. This prevents
           # the setup action from failing when Gemfile.lock lists a newer bundler.
           bundler: '2.4.13'
-      
+
+      - name: Ruby >= '3.1' use newer bundler
+        if: ${{ matrix.ruby-version >= '3.1' }}
+        run: |
+          BUNDLED_WITH=$(awk '/BUNDLED WITH/{getline; print $1}' Gemfile.lock || true)
+          if [ -n "$BUNDLED_WITH" ]; then
+            echo "Installing bundler $BUNDLED_WITH (from Gemfile.lock)"
+            gem install bundler -v "$BUNDLED_WITH"
+          else
+            echo "No BUNDLED WITH found"
+          fi
+          
       - name: Debug info
         run: |
           echo "=== runner info ==="
