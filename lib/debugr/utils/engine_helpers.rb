@@ -22,6 +22,6 @@ def script_or_within_script_dir?(path, script, dir)
 end
 
 def within_debugger_dir(dir, path)
-  debugger_dir = add_trailing_slash(dir)
-  path.start_with?(debugger_dir)
+  dir = add_trailing_slash(dir)
+  path.start_with?(dir)
 end
